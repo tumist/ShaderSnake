@@ -298,7 +298,11 @@ void main()
     
     //---------------- current Location of head logic ------------
     //Last part here under is the speed of movement
-    vec2 currentPos = lastPos + (movEachStep/8.0);//vec2(0.0, 0.05);//(movEachStep/8.0);
+	//vec2 currentPos = lastPos;
+	//if (gameOverTimer < 0.5) {
+		vec2 currentPos = lastPos + (movEachStep/8.0);//vec2(0.0, 0.05);//(movEachStep/8.0);
+	//}
+    
     
     //case if snake goes over on the left side of viewport
     if (int(currentPos.x) == -1) {
@@ -324,7 +328,7 @@ void main()
     if (movEachStep != getDirection(movEachStep)) {
     	movEachStep = getDirection(movEachStep);
     } 
-	movEachStep = getDirection(movEachStep);
+	//movEachStep = getDirection(movEachStep);
     stateData = setNewStateData(stateData, id, movEachStep, 1);
     
     //----------------------NewRunningIndex logic -----------------------

@@ -56,6 +56,7 @@ document.addEventListener("keyup", (e) => {
     console.log(e)
     keyCTX.fillStyle = "black"
     keyCTX.fillRect(0, 0, keyboardCanvas.width, keyboardCanvas.height)
+    //document.dispatchEvent(new Event("updateTex"))
 })
 
 const updateTextureEvent = new CustomEvent("updateTex");
