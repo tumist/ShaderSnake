@@ -17,8 +17,11 @@ layout(location = 2) out vec2 pathData;
 #define numberOfTiles 24.0
 #define snakeColor vec3(17.0/255.0, 212.0/255.0, 30.0/225.0)
 #define foodColor vec3(1.0, 0.0, 0.0)
+#define tailIncreaseRate 1.0
+#define snakeSpeed 12.0
 
 bool snakeCollision = false;
+bool foodCollisionWithTail = false;
 
 //Should return values from 0 to 1
 float random(float seed) {
@@ -82,7 +85,7 @@ float bubblyBox(vec2 uv, float size) {
 vec2 getDirection(vec2 currentMov) {
 	
 	//texture is 4x1 - Order: ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]
-    vec4 keyUp = texelFetch(u_kb, ivec2(0), 0);//texture(u_kb, vec2(38.0/256.0, 1.0));
+    vec4 keyUp = texelFetch(u_kb, ivec2(0, 0), 0);//texture(u_kb, vec2(38.0/256.0, 1.0));
     vec4 keyDown = texelFetch(u_kb, ivec2(1, 0), 0);
     vec4 keyLeft = texelFetch(u_kb, ivec2(2, 0), 0);
     vec4 keyRight = texelFetch(u_kb, ivec2(3, 0), 0);
@@ -106,7 +109,7 @@ vec2 getDirection(vec2 currentMov) {
 	
 	
 	
-	return vec2(0.0);
+	return currentMov;//vec2(0.0);
 
 }
 
@@ -207,7 +210,7 @@ vec2 getFoodLocation(bool collisionHappened) {
 
 
 //Draws the tail, 
-vec3 drawTail(vec3 col, ivec2 id, int sizeOfTail, vec2 newRunningIndex, float singleCellShape, vec2 currentPos) {
+vec3 drawTail(vec3 col, ivec2 id, int sizeOfTail, vec2 newRunningIndex, float singleCellShape, vec2 currentPos, vec2 foodLocation) {
 	
     for (int i = 0; i < sizeOfTail; i++) {
     	float yIndex = newRunningIndex.y;
@@ -230,6 +233,11 @@ vec3 drawTail(vec3 col, ivec2 id, int sizeOfTail, vec2 newRunningIndex, float si
 	    	//col = vec3(1.0, 0.0, 0.0);
 	    	snakeCollision = true;
 	    }
+
+		//food collides with tail:
+		if (ivec2(tail1) == ivec2(foodLocation)) {
+			foodCollisionWithTail = true;
+		}
     }
 
 	return col;
@@ -298,10 +306,12 @@ void main()
     
     //---------------- current Location of head logic ------------
     //Last part here under is the speed of movement
-	//vec2 currentPos = lastPos;
-	//if (gameOverTimer < 0.5) {
-		vec2 currentPos = lastPos + (movEachStep/8.0);//vec2(0.0, 0.05);//(movEachStep/8.0);
-	//}
+	vec2 currentPos = lastPos;
+	//reason for gameoverTimer check is so snake is stationary when resetting game
+	if (gameOverTimer < 0.5) {
+		//Last part here under is the speed of movement
+		currentPos = lastPos + (movEachStep * (snakeSpeed / 100.0));//(movEachStep/8.0);
+	}
     
     
     //case if snake goes over on the left side of viewport
@@ -356,7 +366,7 @@ void main()
 	if (foodLoc == vec2(0.0) || collision == true) {
 		foodLoc = vec2(smoothNoise(u_time) * numberOfTiles, smoothNoise(u_time + 1.33) * numberOfTiles);
 	}
-	stateData = setNewStateData(stateData, id, foodLoc, 3);
+	
 	
 	//--------------- Size of tail logic ----------------------
 	//initial settings
@@ -364,7 +374,7 @@ void main()
 		//sizeOfTail = vec2(0.0, 0.0);
 	//}
 	if (collision == true) {
-		sizeOfTail += vec2(1.0, 0.0);
+		sizeOfTail += vec2(tailIncreaseRate, 0.0);
 		lastCollisionSpot = currentPos;
 	}
 	stateData = setNewStateData(stateData, id, sizeOfTail, 4);
@@ -402,7 +412,7 @@ void main()
     	col = singleCellShape * snakeColor;
     }
     //Drawing tail
-    col = drawTail(col, id, int(sizeOfTail), newRunningIndex, singleCellShape, currentPos);
+    col = drawTail(col, id, int(sizeOfTail), newRunningIndex, singleCellShape, currentPos, foodLoc);
     
     ivec2 cc = circularWave2(id, lastCollisionSpot, circularWaveTimer);
     
@@ -432,6 +442,12 @@ void main()
     	stateData = setNewStateData(stateData, id, vec2(0.0), 4);
     	
     }
+
+	//Special case for foodLocation
+	if (foodCollisionWithTail == true) {
+		foodLoc = vec2(smoothNoise(u_time) * numberOfTiles, smoothNoise(u_time + 1.33) * numberOfTiles);
+	}
+	stateData = setNewStateData(stateData, id, foodLoc, 3);
     
     //------------------ outputting to textures ----------------
     col -= gameOverTimer;

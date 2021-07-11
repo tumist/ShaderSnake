@@ -36,13 +36,13 @@ document.addEventListener("keydown", (e) => {
         keyCTX.fillRect(0, 0, 1, 1)
     }
     if (keyCode == "ArrowDown") {
-        keyCTX.fillRect(1, 0, 2, 1)
+        keyCTX.fillRect(1, 0, 1, 1)
     }
     if (keyCode == "ArrowLeft") {
-        keyCTX.fillRect(2, 0, 3, 1)
+        keyCTX.fillRect(2, 0, 1, 1)
     }
     if (keyCode == "ArrowRight") {
-        keyCTX.fillRect(3, 0, 4, 1)
+        keyCTX.fillRect(3, 0, 1, 1)
     }
     
     //callWholeGLProgram()
@@ -56,7 +56,7 @@ document.addEventListener("keyup", (e) => {
     console.log(e)
     keyCTX.fillStyle = "black"
     keyCTX.fillRect(0, 0, keyboardCanvas.width, keyboardCanvas.height)
-    //document.dispatchEvent(new Event("updateTex"))
+    document.dispatchEvent(new Event("updateTex"))
 })
 
 const updateTextureEvent = new CustomEvent("updateTex");
@@ -115,8 +115,8 @@ function callWholeGLProgram() {
             target: gl.TEXTURE_2D,
             minMag: gl.NEAREST,
             src: keyboardCanvas,
-            //width: 4,
-            //height: 1
+            width: 4,
+            height: 1
         })
 
         
@@ -200,15 +200,15 @@ function callWholeGLProgram() {
             u_path: fb2.attachments[2]
             
         }
-
+        
         document.addEventListener("updateTex", () => {
             console.log("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDD")
             keyboardTex = twgl.createTexture(gl, {
                 target: gl.TEXTURE_2D,
                 minMag: gl.NEAREST,
                 src: keyboardCanvas,
-                //width: 4,
-                //height: 1
+                width: 4,
+                height: 1
             })
             mainUniforms.u_kb = keyboardTex;
         })
@@ -228,6 +228,7 @@ function callWholeGLProgram() {
 
             const timeInSeconds = time * 0.001;
             mainUniforms.u_time = timeInSeconds;
+            //mainUniforms.u_kb = keyboardTex;
             //console.log(timeInSeconds)
         
             
