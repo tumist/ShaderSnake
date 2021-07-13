@@ -26,11 +26,7 @@ keyboardCanvas.style.marginTop = "30px"
 const keyCTX = keyboardCanvas.getContext("2d");
 document.body.append(keyboardCanvas)
 
-const keysIwant = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]
-document.addEventListener("keydown", (e) => {
-    const keyCode = e.code;
-    if (!(keysIwant.includes(keyCode))) return;
-    console.log(e)
+function setSnakeDirection(keyCode) {
     keyCTX.fillStyle = "red"
     if (keyCode == "ArrowUp") {
         keyCTX.fillRect(0, 0, 1, 1)
@@ -47,17 +43,48 @@ document.addEventListener("keydown", (e) => {
     
     //callWholeGLProgram()
     document.dispatchEvent(new Event("updateTex"))
+}
 
-})
+// Keyboard events
+function clearSnakeDirection() {
+    keyCTX.fillStyle = "black"
+    keyCTX.fillRect(0, 0, keyboardCanvas.width, keyboardCanvas.height)
+    document.dispatchEvent(new Event("updateTex"))
+}
+const keysIwant = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]
+document.addEventListener("keydown", (e) => {
+    const keyCode = e.code;
+    if (!(keysIwant.includes(keyCode))) return;
+    console.log(e);
+    setSnakeDirection(keyCode);
+});
 
 document.addEventListener("keyup", (e) => {
     const keyCode = e.code;
     if (!(keysIwant.includes(keyCode))) return;
     console.log(e)
-    keyCTX.fillStyle = "black"
-    keyCTX.fillRect(0, 0, keyboardCanvas.width, keyboardCanvas.height)
-    document.dispatchEvent(new Event("updateTex"))
-})
+    clearSnakeDirection();
+});
+
+// Mouse events
+canvas.addEventListener("mousedown", (e) => {
+    console.log("mousedown", e.offsetX, e.offsetY);
+    
+    // Calculate up/down/left/right assumes the shader is 600x600
+    let x = e.offsetX - 300; 
+    let y = e.offsetY - 300;
+    let sorted = [
+            {keyCode: "ArrowUp", sortKey: -y},
+            {keyCode: "ArrowDown", sortKey: y},
+            {keyCode: "ArrowLeft", sortKey: -x},
+            {keyCode: "ArrowRight", sortKey: x}
+        ].sort((a, b) => b.sortKey - a.sortKey);
+    console.log(sorted);
+    console.log(sorted[0]);
+    setSnakeDirection(sorted[0].keyCode);
+});
+
+canvas.addEventListener("mouseup", clearSnakeDirection);
 
 const updateTextureEvent = new CustomEvent("updateTex");
 
