@@ -305,8 +305,8 @@ callWholeGLProgram()
 
 //Returns -1 if not successfull in getting the snakes head location
 const getSnakeHeadLocation = (rawArray) => {
-    const x = parseInt(rawArray[0] || -1)
-    const y = parseInt(rawArray[1] || -1)
+    const x = rawArray[0] || -1
+    const y = rawArray[1] || -1
 
     console.log(`Snakes current head location -> x: ${x}, y: ${y}`)
 
