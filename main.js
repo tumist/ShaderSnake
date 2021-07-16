@@ -229,7 +229,6 @@ function callWholeGLProgram() {
         }
         
         document.addEventListener("updateTex", () => {
-            console.log("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDD")
             keyboardTex = twgl.createTexture(gl, {
                 target: gl.TEXTURE_2D,
                 minMag: gl.NEAREST,
@@ -246,6 +245,8 @@ function callWholeGLProgram() {
             u_pos: fb1.attachments[1],
             u_path: fb1.attachments[2]
         }
+
+        const headLocRawArray = new Float32Array((4))
 
         const draw = (time) => {
 
@@ -266,18 +267,20 @@ function callWholeGLProgram() {
             //gl.drawBuffers seems absolutely necessary if you want to output to multiple textures from 1 shader! As in here i have 3 outputs
             gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1, gl.COLOR_ATTACHMENT2]);
             twgl.drawBufferInfo(gl, buffers, gl.TRIANGLES, 6)
-            
-            
+
+            //---------Read state variable from GPU to CPU--------------------
+            //Default behaviour of readPixels is to read from gl.COLOR_ATTACHMENT0, but I want gl.COLOR_ATTACHMENT1
+            //So i use gl.readBuffer to specify which buffer to read from. Sets the state for subsequent readPixels calls.
+            gl.readBuffer(gl.COLOR_ATTACHMENT1)
+            gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.FLOAT, headLocRawArray)
+            //console.log(headLocArray)
+            const snakeHead = getSnakeHeadLocation(headLocRawArray)
+
             //--------------displayProgram--------------
             gl.useProgram(displayInfo.program)
             gl.viewport(0, 0, canvas.clientWidth, canvas.clientHeight)
             twgl.setUniforms(displayInfo, displayUniforms);
 
-            //if (activeFB === fb1) {
-                //activeFB = fb2
-            //} else {
-                //activeFB = fb1
-            //}
             
             twgl.bindFramebufferInfo(gl, fb2)
             gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1, gl.COLOR_ATTACHMENT2]);
@@ -299,3 +302,14 @@ function callWholeGLProgram() {
 }
 
 callWholeGLProgram()
+
+//Returns -1 if not successfull in getting the snakes head location
+const getSnakeHeadLocation = (rawArray) => {
+    const x = rawArray[0] || -1
+    const y = rawArray[1] || -1
+
+    console.log(`Snakes current head location -> x: ${x}, y: ${y}`)
+
+    return [x, y]
+
+}
